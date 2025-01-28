@@ -1,5 +1,12 @@
 import { Book } from '../models/bookModel';
 
+interface UserBorrows {
+  userId: string;
+  borrowedBooks: string[];
+}
+
+const userBorrows: UserBorrows[] = [];
+
 const books: Book[] = [
   {
     id: '1',
@@ -24,8 +31,29 @@ const books: Book[] = [
   },
 ];
 
-export const getAllBooks = (): Book[] => {
-  return books;
+export const getAllBooks = (keyword: string): Book[] => {
+  if (!keyword) {
+    return books.slice(0, 50);
+  }
+
+  const lowerCaseKeyword: string = keyword.toLowerCase();
+
+  const filteredBooks = books
+    .map((book) => {
+      const matchesTitle = book.title.toLowerCase().includes(lowerCaseKeyword);
+      const matchesAuthor = book.author
+        .toLowerCase()
+        .includes(lowerCaseKeyword);
+
+      const priority = (matchesTitle ? 1 : 0) + (matchesAuthor ? 1 : 0);
+
+      return { book, priority };
+    })
+    .filter((item) => item.priority > 0)
+    .sort((a, b) => b.priority - a.priority)
+    .map((item) => item.book);
+
+  return filteredBooks.slice(0, 50);
 };
 
 /**
@@ -153,6 +181,18 @@ export const borrowBook = (id: string, borrowerId: string): Book => {
     throw new Error(`Book with ID ${id} is already borrowed`);
   }
 
+  let user = userBorrows.find((u) => u.userId === borrowerId);
+
+  if (!user) {
+    user = { userId: borrowerId, borrowedBooks: [] };
+    userBorrows.push(user);
+  }
+
+  if (user.borrowedBooks.length >= 5) {
+    throw new Error(`User with ID ${borrowerId} has already borrowed 5 books`);
+  }
+
+  user.borrowedBooks.push(id);
   book.isBorrowed = true;
   book.borrowerId = borrowerId;
 
