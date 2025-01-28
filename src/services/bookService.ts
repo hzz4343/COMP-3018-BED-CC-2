@@ -24,8 +24,29 @@ const books: Book[] = [
   },
 ];
 
-export const getAllBooks = (): Book[] => {
-  return books;
+export const getAllBooks = (keyword: string): Book[] => {
+  if (!keyword) {
+    return books.slice(0, 50);
+  }
+
+  const lowerCaseKeyword: string = keyword.toLowerCase();
+
+  const filteredBooks = books
+    .map((book) => {
+      const matchesTitle = book.title.toLowerCase().includes(lowerCaseKeyword);
+      const matchesAuthor = book.author
+        .toLowerCase()
+        .includes(lowerCaseKeyword);
+
+      const priority = (matchesTitle ? 1 : 0) + (matchesAuthor ? 1 : 0);
+
+      return { book, priority };
+    })
+    .filter((item) => item.priority > 0)
+    .sort((a, b) => b.priority - a.priority)
+    .map((item) => item.book);
+
+  return filteredBooks.slice(0, 50);
 };
 
 /**

@@ -3,8 +3,13 @@ import * as bookService from '../services/bookService';
 
 export const getAllBooks = (req: Request, res: Response): void => {
   try {
-    const books = bookService.getAllBooks();
-    res.status(200).json({ message: 'Books retrieved', data: books });
+    const { keyword } = req.params;
+    const books = bookService.getAllBooks(keyword);
+    if (books.length !== 0) {
+      res.status(200).json({ message: 'Books retrieved', data: books });
+    } else {
+      res.status(200).json({ message: 'No books found', data: books });
+    }
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving books' });
   }
