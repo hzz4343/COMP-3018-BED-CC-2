@@ -1,5 +1,12 @@
 import { Book } from '../models/bookModel';
 
+interface UserBorrows {
+  userId: string;
+  borrowedBooks: string[];
+}
+
+const userBorrows: UserBorrows[] = [];
+
 const books: Book[] = [
   {
     id: '1',
@@ -174,6 +181,18 @@ export const borrowBook = (id: string, borrowerId: string): Book => {
     throw new Error(`Book with ID ${id} is already borrowed`);
   }
 
+  let user = userBorrows.find((u) => u.userId === borrowerId);
+
+  if (!user) {
+    user = { userId: borrowerId, borrowedBooks: [] };
+    userBorrows.push(user);
+  }
+
+  if (user.borrowedBooks.length >= 5) {
+    throw new Error(`User with ID ${borrowerId} has already borrowed 5 books`);
+  }
+
+  user.borrowedBooks.push(id);
   book.isBorrowed = true;
   book.borrowerId = borrowerId;
 
